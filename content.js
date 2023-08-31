@@ -2,7 +2,6 @@ console.log("Content script started");
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message) {
-    console.log(message);
     var url = message;
     var elementsData = {
       url: url,
@@ -14,6 +13,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       size: document
         .querySelector("li[class^='params-paramsList__item']")
         .textContent.match(/\S+\s+(\S+)/)[1],
+      adress: document.querySelector("span[class^='style-item-address']")
+        .textContent,
+      description: document.querySelector(
+        "div[class^='style-item-description-text']"
+      ).textContent,
     };
 
     console.log(JSON.stringify(elementsData, null, 2));
