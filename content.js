@@ -1,5 +1,3 @@
-console.log("Content script started");
-
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message) {
     var url = message;
