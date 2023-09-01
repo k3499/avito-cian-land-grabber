@@ -32,21 +32,22 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           ? document.querySelector("div[class^='style-item-description']")
               .textContent
           : null,
-        // status: document.querySelector("div[class^='style-item-description']")
-        //   ? document.querySelector("div[class^='style-item-description']")
-        //       .textContent
-        //   : null,
+        status: document
+          .querySelector(".title-info-title-text")
+          .textContent.match(/\((.*?)\)/)[1]
+          ? document
+              .querySelector(".title-info-title-text")
+              .textContent.match(/\((.*?)\)/)[1]
+          : null,
         kadastr: document
           .querySelector("div[class^='style-item-description']")
-          .textContent.match(/\d{2}:\d{2}:\d{7}:\d{2}/)
+          .textContent.match(/\d{1,5}:\d{1,5}:\d{1,9}:\d{1,5}/)
           ? document
               .querySelector("div[class^='style-item-description']")
-              .textContent.match(/\d{2}:\d{2}:\d{7}:\d{2}/)
+              .textContent.match(/\d{1,5}:\d{1,5}:\d{1,9}:\d{1,5}/)
           : null,
       };
     } else if (site === "www.cian.ru") {
-      // var status = querySelectorAll("div[data-name^='ObjectFactoidsItem']")[1];
-
       var elementsData = {
         title: document.querySelector("div[data-name^='OfferTitleNew']")
           ? document.querySelector("h1").textContent
@@ -83,6 +84,13 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
               .querySelectorAll("div[data-name^='ObjectFactoidsItem']")[1]
               .querySelectorAll("div")[2]
               .querySelectorAll("span")[1].textContent
+          : null,
+        kadastr: document
+          .querySelector("div[data-name^='Description']")
+          .textContent.match(/\d{1,5}:\d{1,5}:\d{1,9}:\d{1,5}/)
+          ? document
+              .querySelector("div[data-name^='Description']")
+              .textContent.match(/\d{1,5}:\d{1,5}:\d{1,9}:\d{1,5}/)
           : null,
       };
     }
