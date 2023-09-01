@@ -3,24 +3,110 @@ console.log("Content script started");
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message) {
     var url = message;
-    var elementsData = {
-      url: url,
-      title: document.querySelector(".title-info-title-text").textContent,
-      price: document
-        .querySelector("span[class^='style-price-value-main']")
-        .querySelector("span[class^='styles-module-size']")
-        .getAttribute("content"),
-      size: document
-        .querySelector("li[class^='params-paramsList__item']")
-        .textContent.match(/\S+\s+(\S+)/)[1],
-      adress: document.querySelector("span[class^='style-item-address']")
-        .textContent,
-      description: document.querySelector(
-        "div[class^='style-item-description-text']"
-      ).textContent,
-    };
+    var site = new URL(url).hostname;
+
+    if (site === "www.avito.ru") {
+      var elementsData = {
+        url: url,
+        title: document.querySelector(".title-info-title-text")
+          ? document.querySelector(".title-info-title-text").textContent
+          : null,
+        price: document.querySelector("span[class^='style-price-value-main']")
+          ? document
+              .querySelector("span[class^='style-price-value-main']")
+              .querySelector("span[class^='styles-module-size']")
+              .getAttribute("content")
+          : null,
+        size: document.querySelector("li[class^='params-paramsList__item']")
+          ? document
+              .querySelector("li[class^='params-paramsList__item']")
+              .textContent.match(/\S+\s+(\S+)/)[1]
+          : null,
+        adress: document.querySelector("span[class^='style-item-address']")
+          ? document.querySelector("span[class^='style-item-address']")
+              .textContent
+          : null,
+        description: document.querySelector(
+          "div[class^='style-item-description']"
+        )
+          ? document.querySelector("div[class^='style-item-description']")
+              .textContent
+          : null,
+      };
+    } else if (site === "www.cian.ru") {
+      // var status = querySelectorAll("div[data-name^='ObjectFactoidsItem']")[1];
+
+      var elementsData = {
+        title: document.querySelector("div[data-name^='OfferTitleNew']")
+          ? document.querySelector("h1").textContent
+          : null,
+        price: document.querySelector("div[data-name^='PriceInfo']")
+          ? document
+              .querySelector("div[data-name^='PriceInfo']")
+              .querySelector("div")
+              .querySelector("span")
+              .textContent.slice(0, -2)
+              .replace(/\s/g, "")
+          : null,
+        size: document.querySelector("div[data-name^='ObjectFactoids']")
+          ? sizeCian(
+              document
+                .querySelector("div[data-name^='ObjectFactoids']")
+                .querySelector("div[data-name^='ObjectFactoidsItem']")
+                .querySelectorAll("div")[2]
+                .querySelectorAll("span")[1].textContent
+            )
+          : null,
+        adress: document.querySelector("div[data-name^='AddressContainer']")
+          ? document
+              .querySelector("div[data-name^='AddressContainer']")
+              .textContent.slice(0, -8)
+          : null,
+        description: document.querySelector("div[data-name^='Description']")
+          ? document.querySelector("div[data-name^='Description']").textContent
+          : null,
+        status: document.querySelectorAll(
+          "div[data-name^='ObjectFactoidsItem']"
+        )[1]
+          ? document
+              .querySelectorAll("div[data-name^='ObjectFactoidsItem']")[1]
+              .querySelectorAll("div")[2]
+              .querySelectorAll("span")[1].textContent
+          : null,
+      };
+    }
+    console.log(
+      document
+        .querySelectorAll("div[data-name^='ObjectFactoidsItem']")[1]
+        .querySelectorAll("div")[2]
+        .querySelectorAll("span")[1].textContent
+    );
 
     console.log(JSON.stringify(elementsData, null, 2));
-    // Дальнейшая обработка информации из popup.js
   }
 });
+
+function sizeCian(size) {
+  if (size.includes("сот")) {
+    // Извлекаем число перед текстом "сот" и преобразуем его в число
+    const sotokNumber = parseFloat(size);
+
+    // Проверяем, удалось ли извлечь число
+    if (!isNaN(sotokNumber)) {
+      return sotokNumber; // Возвращаем число сот
+    }
+  } else if (size.includes("га")) {
+    const gaExp = /(\d+([,.]\d+)?)\s*га/;
+    const gaFound = size.match(gaExp);
+
+    if (gaFound) {
+      const gaNumber = parseFloat(gaFound[1].replace(",", "."));
+
+      if (!isNaN(gaNumber)) {
+        return gaNumber * 100;
+      }
+    }
+  }
+
+  return null;
+}
