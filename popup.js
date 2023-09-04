@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Popup DOMContentLoaded");
-
   var collectButton = document.getElementById("collectButton");
   var textField = document.getElementById("textField");
   var urlWarning =
@@ -8,20 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var areaWarning =
     "Перейдите на страницу земельного и нажмите получить параметры";
   var parceSuccess = "Параметры переданы<br>✅";
-
-  if (collectButton) {
-    console.log("Collect button found");
-
-    collectButton.addEventListener("click", function () {
-      console.log("Collect button clicked");
-
-      chrome.tabs.executeScript({
-        file: "content.js",
-      });
-    });
-  } else {
-    console.log("Collect button not found");
-  }
 
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var activeTab = tabs[0];
@@ -38,6 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //передача в content
   collectButton.addEventListener("click", function () {
+    // Выполнить executeScript один раз
+    chrome.tabs.executeScript({
+      file: "content.js",
+    });
+
+    // Выполнить sendMessage один раз
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       var activeTab = tabs[0];
       var url = activeTab.url;
