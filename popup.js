@@ -11,7 +11,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var activeTab = tabs[0];
     var url = new URL(activeTab.url).hostname;
 
-    if (url === "www.avito.ru" || url === "www.cian.ru") {
+    if (
+      url === "www.avito.ru" ||
+      url === "www.cian.ru" ||
+      url === "kazan.cian.ru"
+    ) {
       collectButton.setAttribute("enabled", "true");
       textField.innerHTML = areaWarning;
     } else {

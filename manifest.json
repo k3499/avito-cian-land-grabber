@@ -18,6 +18,8 @@
     "all_frames": false,
     "content_scripts": [
         {
+            "all_frames": false,
+            "run_at": "document_end",
             "matches": [
                 "<all_urls>"
             ],

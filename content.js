@@ -1,3 +1,4 @@
+var dataTranfered = false;
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message) {
     var url = message;
@@ -45,8 +46,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
               .textContent.match(/\d{1,5}:\d{1,5}:\d{1,9}:\d{1,5}/)
           : null,
       };
-      console.log(JSON.stringify(elementsData, null, 2));
-      return true;
     } else if (site === "www.cian.ru") {
       var elementsData = {
         title: document.querySelector("div[data-name^='OfferTitleNew']")
@@ -93,9 +92,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
               .textContent.match(/\d{1,5}:\d{1,5}:\d{1,9}:\d{1,5}/)
           : null,
       };
-      console.log(JSON.stringify(elementsData, null, 2));
-      return true;
     }
+
+    console.log(JSON.stringify(elementsData, null, 2));
   }
 });
 
