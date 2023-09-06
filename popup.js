@@ -1,44 +1,50 @@
+// Ожидание события "DOMContentLoaded", чтобы убедиться, что страница полностью загружена
+
 document.addEventListener("DOMContentLoaded", function () {
-  var collectButton = document.getElementById("collectButton");
-  var textField = document.getElementById("textField");
-  var urlWarning =
+  // Получение элементов DOM
+  const collectButtonElement = document.getElementById("collectButton");
+  const textFieldElement = document.getElementById("textField");
+
+  // Сообщения и предупреждения для пользователя
+  const urlWarning =
     "Перейдите на земельный участок на <strong>avito.ru</strong> или <strong>cian.ru</strong>";
-  var areaWarning =
+  const areaWarning =
     "Перейдите на страницу земельного и нажмите получить параметры";
-  var parceSuccess = "Параметры переданы<br>✅";
+  const parseSuccess = "Параметры переданы\n✅";
 
+  // Список разрешенных доменов
+  const allowedDomains = ["www.avito.ru", "www.cian.ru", "kazan.cian.ru"];
+
+  // Запрос активной вкладки в текущем окне браузера
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    var activeTab = tabs[0];
-    var url = new URL(activeTab.url).hostname;
+    const activeTab = tabs[0];
+    const url = new URL(activeTab.url).hostname;
 
-    if (
-      url === "www.avito.ru" ||
-      url === "www.cian.ru" ||
-      url === "kazan.cian.ru"
-    ) {
-      collectButton.setAttribute("enabled", "true");
-      textField.innerHTML = areaWarning;
+    if (allowedDomains.includes(url)) {
+      collectButtonElement.removeAttribute("disabled");
+      textFieldElement.textContent = areaWarning;
     } else {
-      collectButton.setAttribute("disabled", "true");
-      textField.innerHTML = urlWarning;
+      collectButtonElement.setAttribute("disabled", "true");
+      textFieldElement.innerHTML = urlWarning;
     }
   });
 
-  //передача в content
-  collectButton.addEventListener("click", function () {
-    // Выполнить executeScript один раз
+  collectButtonElement.addEventListener("click", function () {
+    // Выполнение скрипта content.js в активной вкладке
     chrome.tabs.executeScript({
       file: "content.js",
     });
 
-    // Выполнить sendMessage один раз
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      var activeTab = tabs[0];
-      var url = activeTab.url;
+      const activeTab = tabs[0];
+      const url = activeTab.url;
+      // Отправка сообщения с URL внутреннему скрипту во вкладке
       chrome.tabs.sendMessage(tabs[0].id, url);
-      textField.innerHTML = parceSuccess;
+      // Установка сообщения об успешной передаче данных
+      textFieldElement.textContent = parseSuccess;
+      // Установка таймера для очистки сообщения через 1 секунду
       setTimeout(function () {
-        textField.innerHTML = areaWarning;
+        textFieldElement.textContent = areaWarning;
       }, 1000);
     });
   });
