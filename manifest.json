@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
-    "name": "Сбор информации",
-    "version": "1.0",
+    "name": "Сбор информации с Avito/Cian",
+    "version": "1.1",
     "description": "Расширение для сбора информации и вывода в консоль",
     "permissions": [
         "activeTab"
