@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Popup DOMContentLoaded");
-
   var collectButton = document.getElementById("collectButton");
   var textField = document.getElementById("textField");
   var urlWarning =
@@ -10,24 +8,22 @@ document.addEventListener("DOMContentLoaded", function () {
   var parceSuccess = "Параметры переданы<br>✅";
 
   if (collectButton) {
-    console.log("Collect button found");
-
     collectButton.addEventListener("click", function () {
-      console.log("Collect button clicked");
-
       chrome.tabs.executeScript({
         file: "content.js",
       });
     });
-  } else {
-    console.log("Collect button not found");
   }
 
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var activeTab = tabs[0];
     var url = new URL(activeTab.url).hostname;
 
-    if (url === "www.avito.ru" || url === "www.cian.ru") {
+    if (
+      url === "www.avito.ru" ||
+      url === "www.cian.ru" ||
+      url === "kazan.cian.ru"
+    ) {
       collectButton.setAttribute("enabled", "true");
       textField.innerHTML = areaWarning;
     } else {
