@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     // Проверяем хост и извлекаем необходимые данные
     if (site === "www.avito.ru") {
       elementsData.url = url;
-      elementsData.title = getTextContent(".title-info-title-text");
+      elementsData.title = getTextContent("h1[itemprop^='name']");
       elementsData.price = getPrice(
         "span[class^='style-price-value-main'] span[class^='styles-module-size']"
       );
@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       elementsData.description = getTextContent(
         "div[class^='style-item-description']"
       );
-      elementsData.status = getStatus(".title-info-title-text");
+      elementsData.status = getStatus("h1[itemprop^='name']");
       elementsData.kadastr = getKadastr("div[class^='style-item-description']");
     } else if (site === "www.cian.ru" || site === "kazan.cian.ru") {
       elementsData.url = url;
@@ -76,6 +76,7 @@ function getAddress(selector) {
 }
 // Функция для извлечения статуса Avito
 function getStatus(selector) {
+  console.log(selector);
   const element = document.querySelector(selector);
   if (element) {
     const statusMatch = element.textContent.match(/\((.*?)\)/)[1];
@@ -96,6 +97,7 @@ function getStatusCian(selector) {
   }
   return null;
 }
+
 // Функция для извлечения кадастрового номера
 function getKadastr(selector) {
   const element = document.querySelector(selector);
