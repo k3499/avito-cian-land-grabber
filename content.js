@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message) {
     const url = message;
     const site = new URL(url).hostname; // Получаем хост текущей страницы
-    const elementsData = {};
+    const elementsData = { title: "" };
 
     // Проверяем хост и извлекаем необходимые данные
     if (site === "www.avito.ru") {
@@ -21,6 +21,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       );
       elementsData.status = getStatus("h1[itemprop^='name']");
       elementsData.kadastr = getKadastr("div[class^='style-item-description']");
+      elementsData.lat = getLat("div[class^='style-item-map-wrapper']");
+      elementsData.lon = getLon("div[class^='style-item-map-wrapper']");
     } else if (site === "www.cian.ru" || site === "kazan.cian.ru") {
       elementsData.url = url;
       elementsData.title = getTextContent("div[data-name^='OfferTitleNew'] h1");
@@ -34,9 +36,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         "div[data-name^='ObjectFactoidsItem']"
       );
       elementsData.kadastr = getKadastr("div[data-name^='Description']");
+      elementsData.lat = getLatCian("script[type='text/javascript']");
+      elementsData.lon = getLonCian("script[type='text/javascript']");
     }
 
-    // Если данные еще не переданы, выводим их в консоль и устанавливаем флаг передачи в true
+    // Если данные переданы, выводим их в консоль и устанавливаем флаг передачи в true
     if (!dataTranfered) {
       console.log(JSON.stringify(elementsData, null, 2));
       dataTransferred = true;
@@ -87,10 +91,14 @@ function getStatus(selector) {
 
 // Функция для извлечения статуса на CIAN
 function getStatusCian(selector) {
-  const element = document
-    .querySelectorAll(selector)[1]
-    .querySelectorAll("div")[2]
-    .querySelectorAll("span")[1];
+  let element = "";
+  if (document.querySelectorAll(selector).length > 1) {
+    element = document
+      .querySelectorAll(selector)[1]
+      .querySelectorAll("div")[2]
+      .querySelectorAll("span")[1];
+  }
+
   if (element) {
     const statusMatch = element.textContent;
     return statusMatch;
@@ -111,25 +119,108 @@ function getKadastr(selector) {
   return null;
 }
 
+// Функция для извлечения координаты lat на avito
+function getLat(selector) {
+  const element = document.querySelector(selector);
+  if (element) {
+    return element.getAttribute("data-map-lat");
+  }
+  return null;
+}
+
+// Функция для извлечения координаты lon на avito
+function getLon(selector) {
+  const element = document.querySelector(selector);
+  if (element) {
+    return element.getAttribute("data-map-lon");
+  }
+  return null;
+}
+
+// Функция для извлечения координаты lat на CIAN
+function getLatCian(selector) {
+  let targetScriptTag = "";
+  // Получаем все теги <script> на странице
+  const scriptTags = document.querySelectorAll(selector);
+  // Ищем тег <script>, содержащий нужную строку
+  if (
+    Array.from(scriptTags).find((scriptTag) =>
+      scriptTag.textContent.includes('"coordinates":{')
+    )
+  ) {
+    targetScriptTag = Array.from(scriptTags).find((scriptTag) =>
+      scriptTag.textContent.includes('"coordinates":{')
+    );
+    // Получаем текст внутри найденного тега <script>
+    const scriptText = targetScriptTag ? targetScriptTag.textContent : null;
+    // Теперь у вас есть текст внутри тега <script>, содержащего нужную строку
+    // Вы можете использовать его как вам нужно
+
+    // Извлекаем значения lat и lng с помощью регулярного выражения
+    const coordinatesRegex =
+      /"coordinates":{"lat":(\d+\.\d+),"lng":(\d+\.\d+)}/;
+    const matches = scriptText.match(coordinatesRegex);
+    const lat = matches ? parseFloat(matches[1]) : null;
+    return lat;
+  }
+  return null;
+}
+
+// Функция для извлечения координаты lon на CIAN
+function getLonCian(selector) {
+  let targetScriptTag = "";
+  // Получаем все теги <script> на странице
+  const scriptTags = document.querySelectorAll(selector);
+  // Ищем тег <script>, содержащий нужную строку
+  if (
+    Array.from(scriptTags).find((scriptTag) =>
+      scriptTag.textContent.includes('"coordinates":{')
+    )
+  ) {
+    targetScriptTag = Array.from(scriptTags).find((scriptTag) =>
+      scriptTag.textContent.includes('"coordinates":{')
+    );
+    // Получаем текст внутри найденного тега <script>
+    const scriptText = targetScriptTag ? targetScriptTag.textContent : null;
+    // Теперь у вас есть текст внутри тега <script>, содержащего нужную строку
+    // Вы можете использовать его как вам нужно
+
+    // Извлекаем значения lat и lng с помощью регулярного выражения
+    const coordinatesRegex =
+      /"coordinates":{"lat":(\d+\.\d+),"lng":(\d+\.\d+)}/;
+    const matches = scriptText.match(coordinatesRegex);
+    const lon = matches ? parseFloat(matches[2]) : null;
+    return lon;
+  }
+  return null;
+}
+
 // Функция для извлечения размера на CIAN с поддержкой разных единиц измерения
 function getSizeCian(selector) {
   const element = document
     .querySelector(selector)
     .querySelector("div[data-name^='ObjectFactoidsItem']")
     .querySelectorAll("div")[2]
-    .querySelectorAll("span")[1].textContent;
+    .querySelectorAll("span");
 
-  if (element.includes("сот")) {
+  // Ищем тег <span>, у которого контент начинается с цифры
+  const targetSpanTag = Array.from(element).find((spanTag) =>
+    /^\d/.test(spanTag.textContent)
+  );
+
+  // Получаем текст внутри найденного тега <span>
+  const spanText = targetSpanTag ? targetSpanTag.textContent : null;
+  if (spanText.includes("сот")) {
     // Извлекаем число перед текстом "сот" и преобразуем его в число
-    const sotokNumber = parseFloat(element.replace(",", "."));
+    const sotokNumber = parseFloat(spanText.replace(",", "."));
 
     // Проверяем, удалось ли извлечь число
     if (!isNaN(sotokNumber)) {
       return sotokNumber; // Возвращаем число сот
     }
-  } else if (element.includes("га")) {
+  } else if (spanText.includes("га")) {
     const gaExp = /(\d+([,.]\d+)?)\s*га/;
-    const gaFound = element.match(gaExp);
+    const gaFound = spanText.match(gaExp);
 
     if (gaFound) {
       const gaNumber = parseFloat(gaFound[1].replace(",", "."));

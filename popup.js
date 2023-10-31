@@ -47,5 +47,12 @@ document.addEventListener("DOMContentLoaded", function () {
         textFieldElement.textContent = areaWarning;
       }, 1000);
     });
+    collectButtonElement.setAttribute("disabled", "true");
   });
 });
+
+function logURL(requestDetails) {
+  console.log("Loading: " + requestDetails.url);
+}
+
+chrome.webRequest.onBeforeRequest.addListener(logURL, { urls: ["<all_urls>"] });
